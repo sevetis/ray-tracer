@@ -1,4 +1,6 @@
 mod vec3;
+mod ray;
+
 use vec3::{Color};
 
 const APPROACH: f64 = 255.999;
