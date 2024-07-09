@@ -9,7 +9,7 @@ impl Ray {
     pub fn new(org: Point, direct: Vec3) -> Ray {
         Ray {
             origin: org, 
-            direction: direct.unit()
+            direction: direct
         }
     }
 

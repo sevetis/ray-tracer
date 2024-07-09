@@ -29,7 +29,7 @@ impl IndexMut<usize> for Vec3 {
 }
 
 impl Vec3 {
-    pub fn new(e: [f64; DIMENSION]) -> Vec3 {
+    pub const fn new(e: [f64; DIMENSION]) -> Vec3 {
         Vec3 { e: e }
     }
             
@@ -137,6 +137,13 @@ impl Mul<f64> for Vec3 {
             e[i] = self[i] * rhs;
         }
         Vec3 { e: e }
+    }
+}
+
+impl Mul<Vec3> for f64 {
+    type Output = Vec3;
+    fn mul(self, rhs: Vec3) -> Self::Output {
+        rhs * self
     }
 }
 
