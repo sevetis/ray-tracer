@@ -1,4 +1,4 @@
-use super::vec3::{Point};
+use super::vec3::{Point, Vec3};
 use super::ray::{Ray};
 
 pub struct Sphere {
@@ -35,7 +35,7 @@ impl Sphere {
 
 #[cfg(test)]
 mod tests {
-    use super::Sphere;
+    use super::{Sphere, Vec3, Point, Ray};
 
     #[test]
     fn intersect() {
@@ -46,18 +46,18 @@ mod tests {
         let r1 = Ray::new(
             Point::new([1.0, 0.0, 0.0]),
             Vec3::new([0.0, 0.0, 1.0])
-        )
+        );
         let r2 = Ray::new(
             Point::new([0.0, 0.0, 0.0]),
             Vec3::new([0.0, 0.0, 1.0])
-        )
+        );
         let r3 = Ray::new(
             Point::new([2.0, 0.0, 0.0]),
             Vec3::new([0.0, 0.0, 2.0])
-        )
+        );
 
-        assert_eq!(ball.intersect(r1), true);
-        assert_eq!(ball.intersect(r2), true);
-        assert_eq!(ball.intersect(r3), false);
+        assert_eq!(ball.intersect(&r1), true);
+        assert_eq!(ball.intersect(&r2), true);
+        assert_eq!(ball.intersect(&r3), false);
     }
 }
