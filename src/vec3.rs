@@ -1,6 +1,7 @@
 use std::ops::{Index, IndexMut, Add, Sub, Mul, Div};
 
 const DIMENSION: usize = 3;
+
 pub type Color = Vec3;
 pub type Point = Vec3;
 
