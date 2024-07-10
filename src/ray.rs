@@ -46,9 +46,9 @@ impl HitRecord {
 //        self.t
 //    }
 
-//    pub fn pos(&self) -> &Point {
-//        &self.pos
-//    }
+   pub fn pos(&self) -> &Point {
+       &self.pos
+   }
 
     pub fn normal(&self) -> &Vec3 {
         &self.normal

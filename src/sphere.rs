@@ -29,15 +29,15 @@ impl RayHit for Sphere {
         let oc = self.center - *ray.org();
         let a = ray.direct().square();
         let h = ray.direct().dot(&oc);
-        let c = oc.dot(&oc) - self.radius * self.radius;
+        let c = oc.square() - self.radius * self.radius;
         let delta = h * h - a * c;
 
         if delta < 0.0 {
             return None;
         } else {
             let delta_sqrt = delta.sqrt();
-            let x1 = h - delta_sqrt / a;
-            let x2 = h + delta_sqrt / a;
+            let x1 = (h - delta_sqrt) / a;
+            let x2 = (h + delta_sqrt) / a;
 
             let root: f64;
             if t_min <= x1 && x1 <= t_max {
@@ -63,7 +63,8 @@ impl RayHit for Sphere {
 
 #[cfg(test)]
 mod tests {
-    use super::{Sphere, Vec3, Point, Ray, RayHit};
+    use crate::vec3::Vec3;
+    use super::{Sphere, Point, Ray, RayHit};
 
     #[test]
     fn intersect() {
@@ -72,8 +73,8 @@ mod tests {
             1.0
         );
         let r1 = Ray::new(
-            Point::new([2.0, -1.0, 0.0]),
-            Vec3::new([0.0, 0.0, 1.0])
+            Point::new([2.0, 0.0, -1.0]),
+            Vec3::new([-2.0, 0.0, 2.0])
         );
         let r2 = Ray::new(
             Point::new([0.0, 0.0, 0.0]),
@@ -84,10 +85,20 @@ mod tests {
             Vec3::new([0.0, 0.0, 2.0])
         );
 
-        assert_eq!(ball.intersect(&r1, 0.0, 100.0).unwrap().pos(), &Point::new([1.0, 0.0, 0.0]));
-        assert_eq!(ball.intersect(&r2, 0.0, 100.0).unwrap().pos(), &Point::new([0.0, 0.0, 1.0]));
-        assert_eq!(ball.intersect(&r3, 0.0, 100.0), None);
+        let mut result;
+
+        result = ball.intersect(&r1, 0.0, 100.0);
+        assert_ne!(result, None);
+        assert_eq!(result.unwrap().pos(), &Point::new([1.0, 0.0, 0.0]));
+
+        result = ball.intersect(&r2, 0.0, 100.0);
+        assert_ne!(result, None);
+        assert_eq!(result.unwrap().pos(), &Point::new([0.0, 0.0, 1.0]));
+
+        result = ball.intersect(&r3, 0.0, 100.0);
+        assert_eq!(result, None);
     }
+
 }
 
 
