@@ -24,7 +24,6 @@ impl Sphere {
 }
 
 impl RayHit for Sphere {
-
     fn intersect(&self, ray: &Ray, t_min: f64, t_max: f64) -> Option<HitRecord> {
         let oc = self.center - *ray.org();
         let a = ray.direct().square();
@@ -34,30 +33,39 @@ impl RayHit for Sphere {
 
         if delta < 0.0 {
             return None;
-        } else {
-            let delta_sqrt = delta.sqrt();
-            let x1 = (h - delta_sqrt) / a;
-            let x2 = (h + delta_sqrt) / a;
-
-            let root: f64;
-            if t_min <= x1 && x1 <= t_max {
-                root = x1;
-            } else if t_min <= x2 && x2 <= t_max {
-                root = x2;
-            } else {
-                return None;
-            }
-
-            let position = ray.range(root);
-            let rec = HitRecord::new(
-                root,
-                position,
-                (position - self.center) / self.radius
-            );
-            Some(rec)
         }
-    }
 
+        let delta_sqrt = delta.sqrt();
+        let x1 = (h - delta_sqrt) / a;
+        let x2 = (h + delta_sqrt) / a;
+
+        let root: f64;
+        if t_min <= x1 && x1 <= t_max {
+            root = x1;
+        } else if t_min <= x2 && x2 <= t_max {
+            root = x2;
+        } else {
+            return None;
+        }
+
+        let position = ray.range(root);
+        let mut normal = (position - self.center) / self.radius;
+        let front_face = ray.direct().dot(&normal) > 0.0;
+        if front_face { normal = normal.reverse(); }
+
+        Some(HitRecord::new(
+            root,
+            position,
+            normal,
+            front_face
+        ))
+    }
+}
+
+impl RayHit for &Sphere {
+    fn intersect(&self, ray: &Ray, t_min: f64, t_max: f64) -> Option<HitRecord> {
+        (*self).intersect(ray, t_min, t_max)
+    }
 }
 
 

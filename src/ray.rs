@@ -31,20 +31,22 @@ pub struct HitRecord {
     t: f64,
     pos: Point,
     normal: Vec3,
+    front_face: bool
 }
 
 impl HitRecord {
-    pub fn new(t: f64, p: Point, n: Vec3) -> HitRecord {
+    pub fn new(t: f64, p: Point, n: Vec3, front: bool) -> HitRecord {
         HitRecord {
             t: t,
             pos: p,
-            normal: n
+            normal: n,
+            front_face: front
         } 
     }
 
-//    pub fn t(&self) -> f64 {
-//        self.t
-//    }
+   pub fn t(&self) -> f64 {
+       self.t
+   }
 
    pub fn pos(&self) -> &Point {
        &self.pos
