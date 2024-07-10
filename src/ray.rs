@@ -26,6 +26,38 @@ impl Ray {
     }
 }
 
+#[derive(PartialEq, Debug)]
+pub struct HitRecord {
+    t: f64,
+    pos: Point,
+    normal: Vec3,
+}
+
+impl HitRecord {
+    pub fn new(t: f64, p: Point, n: Vec3) -> HitRecord {
+        HitRecord {
+            t: t,
+            pos: p,
+            normal: n
+        } 
+    }
+
+//    pub fn t(&self) -> f64 {
+//        self.t
+//    }
+
+//    pub fn pos(&self) -> &Point {
+//        &self.pos
+//    }
+
+    pub fn normal(&self) -> &Vec3 {
+        &self.normal
+    }
+}
+
+pub trait RayHit {
+    fn intersect(&self, ray: &Ray, t_min: f64, t_max: f64) -> Option<HitRecord>;
+}
 
 #[cfg(test)]
 mod tests {

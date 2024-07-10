@@ -3,7 +3,7 @@ mod ray;
 mod sphere;
 
 use vec3::{Point, Color, Vec3};
-use ray::{Ray};
+use ray::{Ray, RayHit};
 use sphere::{Sphere};
 
 
@@ -25,11 +25,10 @@ const BLUE: Color = Color::new([0.0, 0.0, 1.0]);
 
 // sphere
 const BALL: Sphere = Sphere::new(Point::new([0.0, 0.0, -1.0]), 0.5);
-// const BALL_COLOR: Color = Color::new([0.1, 0.7, 0.5]);
 fn ray_color(r: &Ray) -> Color {
-    match BALL.ray_intersect(r) {
-        Some(point) => {
-            let normal = (point - *BALL.center()).unit();
+    match BALL.intersect(r, 0.0, 1.0) {
+        Some(rec) => {
+            let normal = rec.normal();
             0.5 * Color::new([normal.x() + 1.0, normal.y() + 1.0, normal.z() + 1.0])
         },
         None => {

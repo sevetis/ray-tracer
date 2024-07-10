@@ -1,5 +1,5 @@
-use super::vec3::{Point, Vec3};
-use super::ray::{Ray};
+use super::vec3::{Point};
+use super::ray::{Ray, HitRecord, RayHit};
 
 pub struct Sphere {
     center: Point,
@@ -14,32 +14,56 @@ impl Sphere {
         }
     }
 
-    pub fn ray_intersect(&self, ray: &Ray) -> Option<Point> {
+//    pub fn center(&self) -> &Point {
+//        &self.center
+//    }
+
+//    pub fn radius(&self) -> f64 {
+//        self.radius
+//    }
+}
+
+impl RayHit for Sphere {
+
+    fn intersect(&self, ray: &Ray, t_min: f64, t_max: f64) -> Option<HitRecord> {
         let oc = self.center - *ray.org();
         let a = ray.direct().square();
         let h = ray.direct().dot(&oc);
         let c = oc.dot(&oc) - self.radius * self.radius;
         let delta = h * h - a * c;
+
         if delta < 0.0 {
-            None
+            return None;
         } else {
-            let x1 = (h - delta.sqrt()) / a;
-            Some(ray.range(x1))
+            let delta_sqrt = delta.sqrt();
+            let x1 = h - delta_sqrt / a;
+            let x2 = h + delta_sqrt / a;
+
+            let root: f64;
+            if t_min <= x1 && x1 <= t_max {
+                root = x1;
+            } else if t_min <= x2 && x2 <= t_max {
+                root = x2;
+            } else {
+                return None;
+            }
+
+            let position = ray.range(root);
+            let rec = HitRecord::new(
+                root,
+                position,
+                (position - self.center) / self.radius
+            );
+            Some(rec)
         }
     }
 
-    pub fn center(&self) -> &Point {
-        &self.center
-    }
-
-    pub fn radius(&self) -> f64 {
-        self.radius
-    }
 }
+
 
 #[cfg(test)]
 mod tests {
-    use super::{Sphere, Vec3, Point, Ray};
+    use super::{Sphere, Vec3, Point, Ray, RayHit};
 
     #[test]
     fn intersect() {
@@ -48,7 +72,7 @@ mod tests {
             1.0
         );
         let r1 = Ray::new(
-            Point::new([1.0, 0.0, 0.0]),
+            Point::new([2.0, -1.0, 0.0]),
             Vec3::new([0.0, 0.0, 1.0])
         );
         let r2 = Ray::new(
@@ -60,8 +84,10 @@ mod tests {
             Vec3::new([0.0, 0.0, 2.0])
         );
 
-        assert_eq!(ball.ray_intersect(&r1), Some(Point::new([1.0, 0.0, 0.0])));
-        assert_eq!(ball.ray_intersect(&r2), Some(Point::new([0.0, 0.0, -1.0])));
-        assert_eq!(ball.ray_intersect(&r3), None);
+        assert_eq!(ball.intersect(&r1, 0.0, 100.0).unwrap().pos(), &Point::new([1.0, 0.0, 0.0]));
+        assert_eq!(ball.intersect(&r2, 0.0, 100.0).unwrap().pos(), &Point::new([0.0, 0.0, 1.0]));
+        assert_eq!(ball.intersect(&r3, 0.0, 100.0), None);
     }
 }
+
+
