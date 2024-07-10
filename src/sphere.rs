@@ -14,22 +14,26 @@ impl Sphere {
         }
     }
 
-    fn ray_distance(&self, ray: &Ray) -> f64 {
-        if self.center == *ray.org() {
-            return 0.0;
+    pub fn ray_intersect(&self, ray: &Ray) -> Option<Point> {
+        let oc = self.center - *ray.org();
+        let a = ray.direct().square();
+        let h = ray.direct().dot(&oc);
+        let c = oc.dot(&oc) - self.radius * self.radius;
+        let delta = h * h - a * c;
+        if delta < 0.0 {
+            None
+        } else {
+            let x1 = (h - delta.sqrt()) / a;
+            Some(ray.range(x1))
         }
-
-        let a = ray.direct();
-        let b = self.center - *ray.org();
-        let a_len = a.length();
-        let b_len = b.length();
-        let cos_ab = a.dot(&b) / (a_len * b_len);
-        let sin_ab = (1.0 - cos_ab * cos_ab).sqrt();
-        sin_ab * b_len
     }
 
-    pub fn intersect(&self, ray: &Ray) -> bool {
-        self.ray_distance(ray) <= self.radius
+    pub fn center(&self) -> &Point {
+        &self.center
+    }
+
+    pub fn radius(&self) -> f64 {
+        self.radius
     }
 }
 
@@ -56,8 +60,8 @@ mod tests {
             Vec3::new([0.0, 0.0, 2.0])
         );
 
-        assert_eq!(ball.intersect(&r1), true);
-        assert_eq!(ball.intersect(&r2), true);
-        assert_eq!(ball.intersect(&r3), false);
+        assert_eq!(ball.ray_intersect(&r1), Some(Point::new([1.0, 0.0, 0.0])));
+        assert_eq!(ball.ray_intersect(&r2), Some(Point::new([0.0, 0.0, -1.0])));
+        assert_eq!(ball.ray_intersect(&r3), None);
     }
 }
