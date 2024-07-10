@@ -7,9 +7,8 @@ pub const INF: f64 = std::f64::INFINITY;
 
 pub const EARTH: Sphere = Sphere::new(Point::new([0.0, -100.5, -1.0]), 100.0);
 
-
 pub struct World {
-    objects: Vec<Arc<Box<dyn RayHit>>>
+    objects: Vec<Arc<dyn RayHit>>
 }
 
 impl World {
@@ -27,10 +26,8 @@ impl World {
     }
 
     pub fn add<T: RayHit + 'static>(&mut self, object: T) {
-        self.objects.push(Arc::new(Box::new(object)));
+        self.objects.push(Arc::new(object));
     }
-
-
 }
 
 impl RayHit for World {

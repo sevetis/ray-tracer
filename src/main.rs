@@ -17,14 +17,12 @@ fn write_color(c: &Color) {
 const WHITE: Color = Color::new([1.0, 1.0, 1.0]);
 const BLUE: Color = Color::new([0.0, 0.0, 1.0]);
 
-
 fn ray_color(r: &Ray, world: &dyn RayHit) -> Color {
     match world.intersect(r, 0.0, INF) {
         Some(rec) => {
             0.5 * (WHITE + *rec.normal())
         },
         None => {
-            // println!("A");
             let alpha = (r.direct().unit().y() + 1.0) / 2.0;
             alpha * WHITE + (1.0 - alpha) * BLUE
         }
