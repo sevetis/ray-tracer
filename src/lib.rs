@@ -9,4 +9,7 @@ mod sphere;
 pub use sphere::{Sphere};
 
 mod world;
-pub use world::{World, INF};
+pub use world::{World, INF, ORIGIN};
+
+mod camera;
+pub use camera::Camera;

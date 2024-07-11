@@ -4,7 +4,7 @@ use crate::ray::{Ray, RayHit, HitRecord};
 use crate::sphere::{Sphere};
 
 pub const INF: f64 = std::f64::INFINITY;
-
+pub const ORIGIN: Point = Point::new([0.0, 0.0, 0.0]);
 pub const EARTH: Sphere = Sphere::new(Point::new([0.0, -100.5, -1.0]), 100.0);
 
 pub struct World {
