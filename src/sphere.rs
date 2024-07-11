@@ -1,5 +1,5 @@
 use super::vec3::{Point};
-use super::ray::{Ray, HitRecord, RayHit};
+use super::ray::{Ray, HitRecord, Hittable};
 
 pub struct Sphere {
     center: Point,
@@ -23,7 +23,7 @@ impl Sphere {
 //    }
 }
 
-impl RayHit for Sphere {
+impl Hittable for Sphere {
     fn intersect(&self, ray: &Ray, t_min: f64, t_max: f64) -> Option<HitRecord> {
         let oc = self.center - *ray.org();
         let a = ray.direct().square();
@@ -62,7 +62,7 @@ impl RayHit for Sphere {
     }
 }
 
-impl RayHit for &Sphere {
+impl Hittable for &Sphere {
     fn intersect(&self, ray: &Ray, t_min: f64, t_max: f64) -> Option<HitRecord> {
         (*self).intersect(ray, t_min, t_max)
     }
@@ -72,7 +72,7 @@ impl RayHit for &Sphere {
 #[cfg(test)]
 mod tests {
     use crate::vec3::Vec3;
-    use super::{Sphere, Point, Ray, RayHit};
+    use super::{Sphere, Point, Ray, Hittable};
 
     #[test]
     fn intersect() {

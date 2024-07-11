@@ -1,5 +1,5 @@
 use crate::vec3::{Point, Color, Vec3};
-use crate::ray::{Ray, RayHit};
+use crate::ray::{Ray, Hittable};
 use crate::world::{ORIGIN, INF};
 use std::fs::File;
 use std::io::prelude::*;
@@ -18,7 +18,7 @@ const OFFSET: [[f64; 2]; 8] = [
 const WHITE: Color = Color::new([1.0, 1.0, 1.0]);
 const SKY_BLUE: Color = Color::new([0.5, 0.7, 1.0]);
 
-fn ray_color(r: &Ray, world: &dyn RayHit) -> Color {
+fn ray_color<T: Hittable + 'static>(r: &Ray, world: &T) -> Color {
     match world.intersect(r, 0.0, INF) {
         Some(rec) => 0.5 * (WHITE + *rec.normal()),
         None => {
@@ -71,7 +71,7 @@ impl Camera {
         }
     }
 
-    pub fn render<T: RayHit + 'static>(&self, environment: &T, is_antialiasing: bool) {
+    pub fn render<T: Hittable + 'static>(&self, environment: &T, is_antialiasing: bool) {
         let mut photo = match File::create("out.ppm") {
             Err(e) => panic!("Could not create photo: {}", e),
             Ok(file) => file
@@ -94,7 +94,7 @@ impl Camera {
         }
     }
 
-    fn antialias_color<T: RayHit + 'static>(&self, p: &Point, environment: &T) -> Color {
+    fn antialias_color<T: Hittable + 'static>(&self, p: &Point, environment: &T) -> Color {
         let mut ray = Ray::new(self.eye, *p - self.eye);
         let mut color = ray_color(&ray, environment);
 

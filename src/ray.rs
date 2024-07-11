@@ -57,7 +57,7 @@ impl HitRecord {
     }
 }
 
-pub trait RayHit {
+pub trait Hittable {
     fn intersect(&self, ray: &Ray, t_min: f64, t_max: f64) -> Option<HitRecord>;
 }
 

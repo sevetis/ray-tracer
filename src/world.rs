@@ -1,6 +1,6 @@
 use std::sync::{Arc};
 use crate::vec3::{Point};
-use crate::ray::{Ray, RayHit, HitRecord};
+use crate::ray::{Ray, Hittable, HitRecord};
 use crate::sphere::{Sphere};
 
 pub const INF: f64 = std::f64::INFINITY;
@@ -8,7 +8,7 @@ pub const ORIGIN: Point = Point::new([0.0, 0.0, 0.0]);
 pub const EARTH: Sphere = Sphere::new(Point::new([0.0, -100.5, -1.0]), 100.0);
 
 pub struct World {
-    objects: Vec<Arc<dyn RayHit>>
+    objects: Vec<Arc<dyn Hittable>>
 }
 
 impl World {
@@ -25,12 +25,12 @@ impl World {
         }
     }
 
-    pub fn add<T: RayHit + 'static>(&mut self, object: T) {
+    pub fn add<T: Hittable + 'static>(&mut self, object: T) {
         self.objects.push(Arc::new(object));
     }
 }
 
-impl RayHit for World {
+impl Hittable for World {
     fn intersect(&self, ray: &Ray, t_min: f64, t_max: f64) -> Option<HitRecord> {
         let mut closest = t_max;
         let mut result = None;
