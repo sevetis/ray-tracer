@@ -1,5 +1,6 @@
 use lib::{Camera, World, Sphere, Point};
 
+const ANTIALIAS: bool = true;
 
 fn main() {
 
@@ -8,6 +9,6 @@ fn main() {
     world.add(ball);
 
     let c = Camera::new();
-    c.render(&world);
+    c.render(&world, ANTIALIAS);
 }
 

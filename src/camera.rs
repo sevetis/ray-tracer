@@ -4,21 +4,26 @@ use crate::world::{ORIGIN, INF};
 use std::fs::File;
 use std::io::prelude::*;
 
-
 const ASPECT_RATIO: f64 = 16.0 / 9.0;
 const FOCAL_LEN: f64 = 1.0;
 const WIDTH: f64 = 400.0;
 const APPROACH: f64 = 255.999;
 
+const SAMPLES_NUM: usize = 4;
+const OFFSET: [[f64; 2]; 8] = [
+    [0.0, 0.5], [0.5, 0.0], [0.0, -0.5], [-0.5, 0.0],
+    [0.5, 0.5], [0.5, -0.5], [-0.5, -0.5], [-0.5, 0.5]
+];
+
 const WHITE: Color = Color::new([1.0, 1.0, 1.0]);
-const BLUE: Color = Color::new([0.0, 0.0, 1.0]);
+const SKY_BLUE: Color = Color::new([0.5, 0.7, 1.0]);
 
 fn ray_color(r: &Ray, world: &dyn RayHit) -> Color {
     match world.intersect(r, 0.0, INF) {
         Some(rec) => 0.5 * (WHITE + *rec.normal()),
         None => {
             let alpha = (r.direct().unit().y() + 1.0) / 2.0;
-            alpha * WHITE + (1.0 - alpha) * BLUE
+            (1.0 - alpha) * WHITE + alpha * SKY_BLUE
         }
     }
 }
@@ -66,7 +71,7 @@ impl Camera {
         }
     }
 
-    pub fn render<T: RayHit + 'static>(&self, world: &T) {
+    pub fn render<T: RayHit + 'static>(&self, environment: &T, is_antialiasing: bool) {
         let mut photo = match File::create("out.ppm") {
             Err(e) => panic!("Could not create photo: {}", e),
             Ok(file) => file
@@ -77,9 +82,29 @@ impl Camera {
         for i in 0..self.height as i64 {
             for j in 0..self.width as i64 {
                 let pixel_center = self.pixel_start + (i as f64) * self.delta_v + (j as f64) * self.delta_u;
-                let ray = Ray::new(self.eye, pixel_center - self.eye);
-                write_color(&photo, &ray_color(&ray, world));
+                let color: Color;
+                if is_antialiasing {
+                    color = self.antialias_color(&pixel_center, environment);
+                } else {
+                    let ray = Ray::new(self.eye, pixel_center - self.eye);
+                    color = ray_color(&ray, environment);
+                }
+                write_color(&photo, &color);
             }
         }
     }
+
+    fn antialias_color<T: RayHit + 'static>(&self, p: &Point, environment: &T) -> Color {
+        let mut ray = Ray::new(self.eye, *p - self.eye);
+        let mut color = ray_color(&ray, environment);
+
+        for i in 0..SAMPLES_NUM {
+            let sample_center = *p + OFFSET[i][0] * self.delta_u + OFFSET[i][1] * self.delta_v;
+            ray = Ray::new(self.eye, sample_center - self.eye);
+            color = color + ray_color(&ray, environment);
+        }
+
+        color / (SAMPLES_NUM as f64 + 1.0)
+    }
+
 }
