@@ -1,4 +1,5 @@
 use std::ops::{Index, IndexMut, Add, Sub, Mul, Div};
+use rand::Rng;
 
 const DIMENSION: usize = 3;
 
@@ -33,13 +34,31 @@ impl Vec3 {
     pub const fn new(e: [f64; DIMENSION]) -> Vec3 {
         Vec3 { e: e }
     }
+
+    pub fn random(min: f64, max: f64) -> Vec3 {
+        let mut result = Vec3::new([0.0; DIMENSION]);
+        let mut rng = rand::thread_rng();
+        for i in 0..DIMENSION {
+            result[i] = rng.gen_range(min..max);
+        }
+        result
+    }
+    
+    pub fn random_in_unit_sphere() -> Vec3{
+        let mut result: Vec3;
+        loop {
+            result = Vec3::random(-1.0, 1.0);
+            if result.square() <= 1.0 { break; }
+        }
+        result
+    }
             
     pub fn x(&self) -> f64 { self[0] }
     pub fn y(&self) -> f64 { self[1] }
     pub fn z(&self) -> f64 { self[2] }
 
     pub fn reverse(&self) ->Vec3 {
-        let mut e: [f64; DIMENSION] = [0.0; DIMENSION];
+        let mut e = [0.0; DIMENSION];
         for i in 0..DIMENSION {
             e[i] = -self[i];
         }
@@ -79,6 +98,7 @@ impl Vec3 {
         e[DIMENSION - 1] = self[0] * rhs[1] - self[1] * rhs[0];
         Vec3 { e: e }
     }
+
 }
 
 

@@ -24,6 +24,15 @@ impl Ray {
     pub fn range(&self, pos: f64) -> Point {
         self.origin + self.direction * pos
     }
+
+    pub fn diffuse(normal: &Vec3) -> Vec3 {
+        let reflect = Vec3::random_in_unit_sphere().unit();
+        if reflect.dot(normal) > 0.0 {
+            reflect
+        } else {
+            reflect.reverse()
+        }
+    }
 }
 
 #[derive(PartialEq, Debug)]
