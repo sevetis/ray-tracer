@@ -15,7 +15,7 @@ const SKY_BLUE: Color = Color::new([0.5, 0.7, 1.0]);
 
 fn ray_color<T: Hittable + 'static>(r: &Ray, environment: &T, depth: u8) -> Color {
     if depth <= 0 { return BLACK; }
-    match environment.intersect(r, 0.0, INF) {
+    match environment.intersect(r, 0.001, INF) {
         Some(rec) => {
             let reflect = Ray::diffuse(rec.normal());
             0.5 * ray_color(&Ray::new(*rec.pos(), reflect), environment, depth - 1)
