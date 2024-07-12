@@ -17,7 +17,7 @@ fn ray_color<T: Hittable + 'static>(r: &Ray, environment: &T, depth: u8) -> Colo
     if depth <= 0 { return BLACK; }
     match environment.intersect(r, 0.001, INF) {
         Some(rec) => {
-            let reflect = Ray::diffuse(rec.normal());
+            let reflect = *rec.normal() + Ray::diffuse(rec.normal());
             0.5 * ray_color(&Ray::new(*rec.pos(), reflect), environment, depth - 1)
         },
         None => {
@@ -27,10 +27,17 @@ fn ray_color<T: Hittable + 'static>(r: &Ray, environment: &T, depth: u8) -> Colo
     }
 }
 
+fn linear_to_gamma(val: f64) -> f64 {
+    if val > 0.0 { 
+        return val.sqrt();
+    }
+    0.0
+}
+
 fn write_color(mut file: &File, c: &Color) {
-    let r_byte = (c.x() * RGB_MAX) as i32;
-    let g_byte = (c.y() * RGB_MAX) as i32;
-    let b_byte = (c.z() * RGB_MAX) as i32;
+    let r_byte = (linear_to_gamma(c.x()) * RGB_MAX) as i32;
+    let g_byte = (linear_to_gamma(c.y()) * RGB_MAX) as i32;
+    let b_byte = (linear_to_gamma(c.z()) * RGB_MAX) as i32; 
     let color = format!("{} {} {}\n", r_byte, g_byte, b_byte);
     let _ = file.write_all(color.as_bytes());
 }
