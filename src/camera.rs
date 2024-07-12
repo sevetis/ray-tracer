@@ -7,25 +7,18 @@ use std::io::prelude::*;
 const ASPECT_RATIO: f64 = 16.0 / 9.0;
 const FOCAL_LEN: f64 = 1.0;
 const WIDTH: f64 = 400.0;
-const APPROACH: f64 = 255.999;
 
-// antialiasing
-const SAMPLES_NUM: usize = 4;
-const OFFSET: [[f64; 2]; 8] = [
-    [0.0, 0.5], [0.5, 0.0], [0.0, -0.5], [-0.5, 0.0],
-    [0.5, 0.5], [0.5, -0.5], [-0.5, -0.5], [-0.5, 0.5]
-];
-
+const RGB_MAX: f64 = 255.999;
 const WHITE: Color = Color::new([1.0, 1.0, 1.0]);
 const BLACK: Color = Color::new([0.0, 0.0, 0.0]);
 const SKY_BLUE: Color = Color::new([0.5, 0.7, 1.0]);
 
-fn ray_color<T: Hittable + 'static>(r: &Ray, world: &T, depth: u8) -> Color {
+fn ray_color<T: Hittable + 'static>(r: &Ray, environment: &T, depth: u8) -> Color {
     if depth <= 0 { return BLACK; }
-    match world.intersect(r, 0.0, INF) {
+    match environment.intersect(r, 0.0, INF) {
         Some(rec) => {
             let reflect = Ray::diffuse(rec.normal());
-            0.5 * ray_color(&Ray::new(*rec.pos(), reflect), world, depth - 1)
+            0.5 * ray_color(&Ray::new(*rec.pos(), reflect), environment, depth - 1)
         },
         None => {
             let alpha = (r.direct().unit().y() + 1.0) / 2.0;
@@ -35,9 +28,9 @@ fn ray_color<T: Hittable + 'static>(r: &Ray, world: &T, depth: u8) -> Color {
 }
 
 fn write_color(mut file: &File, c: &Color) {
-    let r_byte = (c.x() * APPROACH) as i32;
-    let g_byte = (c.y() * APPROACH) as i32;
-    let b_byte = (c.z() * APPROACH) as i32;
+    let r_byte = (c.x() * RGB_MAX) as i32;
+    let g_byte = (c.y() * RGB_MAX) as i32;
+    let b_byte = (c.z() * RGB_MAX) as i32;
     let color = format!("{} {} {}\n", r_byte, g_byte, b_byte);
     let _ = file.write_all(color.as_bytes());
 }
@@ -50,6 +43,7 @@ pub struct Camera {
     pixel_start: Point,
     delta_u: Vec3,
     delta_v: Vec3,
+    sample_num: u16,
     reflect_depth: u8,
 }
 
@@ -75,11 +69,12 @@ impl Camera {
             pixel_start: start,
             delta_u: delta_u,
             delta_v: delta_v,
+            sample_num: 10,
             reflect_depth: 50
         }
     }
 
-    pub fn render<T: Hittable + 'static>(&self, environment: &T, is_antialiasing: bool) {
+    pub fn render<T: Hittable + 'static>(&self, environment: &T) {
         let mut photo = match File::create("out.ppm") {
             Err(e) => panic!("Could not create photo: {}", e),
             Ok(file) => file
@@ -90,30 +85,19 @@ impl Camera {
         for i in 0..self.height as i64 {
             println!("Remaining: {}", self.height as i64 - i);
             for j in 0..self.width as i64 {
-                let pixel_center = self.pixel_start + (i as f64) * self.delta_v + (j as f64) * self.delta_u;
-                let color: Color;
-                if is_antialiasing {
-                    color = self.antialias_color(&pixel_center, environment);
-                } else {
-                    let ray = Ray::new(self.eye, pixel_center - self.eye);
-                    color = ray_color(&ray, environment, self.reflect_depth);
+                let mut color = BLACK;
+                for _ in 0..self.sample_num {
+                    let ray = self.ray_sample(i as f64, j as f64);
+                    color = color + ray_color(&ray, environment, self.reflect_depth);
                 }
-                write_color(&photo, &color);
+                write_color(&photo, &(color / self.sample_num as f64));
             }
         }
     }
 
-    fn antialias_color<T: Hittable + 'static>(&self, p: &Point, environment: &T) -> Color {
-        let mut ray = Ray::new(self.eye, *p - self.eye);
-        let mut color = ray_color(&ray, environment, self.reflect_depth);
-
-        for i in 0..SAMPLES_NUM {
-            let sample_center = *p + OFFSET[i][0] * self.delta_u + OFFSET[i][1] * self.delta_v;
-            ray = Ray::new(self.eye, sample_center - self.eye);
-            color = color + ray_color(&ray, environment, self.reflect_depth);
-        }
-
-        color / (SAMPLES_NUM as f64 + 1.0)
+    fn ray_sample(&self, i: f64, j: f64) -> Ray {
+        let offset = Vec3::random(-0.5, 0.5);
+        let sample_pixel = self.pixel_start + (i + offset.y()) * self.delta_v + (j + offset.x()) * self.delta_u;
+        Ray::new(self.eye, sample_pixel - self.eye)
     }
-
 }

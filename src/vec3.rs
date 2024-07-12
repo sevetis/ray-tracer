@@ -1,4 +1,5 @@
 use std::ops::{Index, IndexMut, Add, Sub, Mul, Div};
+use std::fmt;
 use rand::Rng;
 
 const DIMENSION: usize = 3;
@@ -30,6 +31,12 @@ impl IndexMut<usize> for Vec3 {
     }
 }
 
+impl fmt::Display for Vec3 {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "({}, {}, {})", self[0], self[1], self[2])
+    }
+}
+
 impl Vec3 {
     pub const fn new(e: [f64; DIMENSION]) -> Vec3 {
         Vec3 { e: e }
@@ -48,7 +55,7 @@ impl Vec3 {
         let mut result: Vec3;
         loop {
             result = Vec3::random(-1.0, 1.0);
-            if result.square() <= 1.0 { break; }
+            if result.square() < 1.0 { break; }
         }
         result
     }
