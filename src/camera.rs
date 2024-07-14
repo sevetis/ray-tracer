@@ -1,12 +1,13 @@
-use crate::vec3::{Point, Color, Vec3};
 use crate::ray::{Ray, Hittable};
+use crate::vec3::{Point, Color, Vec3};
 use crate::world::{ORIGIN, INF};
+use crate::material::{scatter};
 use std::fs::File;
-use std::io::prelude::*;
+use std::io::Write;
 
 const ASPECT_RATIO: f64 = 16.0 / 9.0;
 const FOCAL_LEN: f64 = 1.0;
-const WIDTH: f64 = 400.0;
+const WIDTH: f64 = 1000.0;
 
 const RGB_MAX: f64 = 255.999;
 const WHITE: Color = Color::new([1.0, 1.0, 1.0]);
@@ -17,8 +18,10 @@ fn ray_color<T: Hittable + 'static>(r: &Ray, environment: &T, depth: u8) -> Colo
     if depth <= 0 { return BLACK; }
     match environment.intersect(r, 0.001, INF) {
         Some(rec) => {
-            let reflect = *rec.normal() + Ray::diffuse(rec.normal());
-            0.5 * ray_color(&Ray::new(*rec.pos(), reflect), environment, depth - 1)
+            if let Some((scattered, attenuation)) = scatter(rec.mat(), r, &rec) {
+                return attenuation * ray_color(&scattered, environment, depth - 1);
+            }
+            BLACK
         },
         None => {
             let alpha = (r.direct().unit().y() + 1.0) / 2.0;
@@ -84,27 +87,36 @@ impl Camera {
     pub fn render<T: Hittable + 'static>(&self, environment: &T) {
         let mut photo = match File::create("out.ppm") {
             Err(e) => panic!("Could not create photo: {}", e),
-            Ok(file) => file
+            Ok(file) => file,
         };
         let header = format!("P3\n{} {}\n255\n", self.width, self.height);
         let _ = photo.write_all(header.as_bytes());
 
-        for i in 0..self.height as i64 {
-            println!("Remaining: {}", self.height as i64 - i);
-            for j in 0..self.width as i64 {
+        let height = self.height as i64;
+        let width = self.width as i64;
+
+        for i in 0..height {
+            let y = i as f64;
+            print!("\rProgress: {:.0}%", y * 100.0 / self.height);
+            std::io::stdout().flush().unwrap();
+            
+            for j in 0..width {
+                let x = j as f64;
                 let mut color = BLACK;
                 for _ in 0..self.sample_num {
-                    let ray = self.ray_sample(i as f64, j as f64);
-                    color = color + ray_color(&ray, environment, self.reflect_depth);
+                    let offset = Vec3::random(-0.5, 0.5);
+                    let mut sample_pixel = self.pixel_start;
+                    sample_pixel = sample_pixel + (y + offset.y()) * self.delta_v;
+                    sample_pixel = sample_pixel + (x + offset.x()) * self.delta_u;
+                    let ray = Ray::new(self.eye, sample_pixel - self.eye);
+                    color = color + ray_color(&ray, &*environment, self.reflect_depth);
                 }
-                write_color(&photo, &(color / self.sample_num as f64));
+                
+                let sample_average_color = color / self.sample_num as f64;
+                write_color(&photo, &sample_average_color);
             }
         }
+        println!("\nCompleted!");
     }
 
-    fn ray_sample(&self, i: f64, j: f64) -> Ray {
-        let offset = Vec3::random(-0.5, 0.5);
-        let sample_pixel = self.pixel_start + (i + offset.y()) * self.delta_v + (j + offset.x()) * self.delta_u;
-        Ray::new(self.eye, sample_pixel - self.eye)
-    }
 }

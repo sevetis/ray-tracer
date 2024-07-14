@@ -1,4 +1,5 @@
 use crate::vec3::{Point, Vec3};
+use crate::material::{Material};
 
 pub struct Ray {
     origin: Point,
@@ -35,40 +36,48 @@ impl Ray {
     }
 }
 
-#[derive(PartialEq, Debug)]
+
+#[derive(PartialEq)]
 pub struct HitRecord {
     t: f64,
     pos: Point,
     normal: Vec3,
-    front_face: bool
+    front_face: bool,
+    mat: Material,
 }
 
 impl HitRecord {
-    pub fn new(t: f64, p: Point, n: Vec3, front: bool) -> HitRecord {
+    pub fn new(t: f64, p: Point, n: Vec3, front: bool, m: Material) -> HitRecord {
         HitRecord {
             t: t,
             pos: p,
             normal: n,
-            front_face: front
+            front_face: front,
+            mat: m,
         } 
     }
 
-   pub fn t(&self) -> f64 {
-       self.t
-   }
+    pub fn t(&self) -> f64 {
+        self.t
+    }
 
-   pub fn pos(&self) -> &Point {
-       &self.pos
-   }
+    pub fn pos(&self) -> &Point {
+        &self.pos
+    }
 
     pub fn normal(&self) -> &Vec3 {
         &self.normal
+    }
+
+    pub fn mat(&self) -> &Material {
+        &self.mat
     }
 }
 
 pub trait Hittable {
     fn intersect(&self, ray: &Ray, t_min: f64, t_max: f64) -> Option<HitRecord>;
 }
+
 
 #[cfg(test)]
 mod tests {

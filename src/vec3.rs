@@ -59,6 +59,10 @@ impl Vec3 {
         }
         result
     }
+
+    pub fn random_unit_vec() -> Vec3 {
+        Vec3::random_in_unit_sphere().unit()
+    }
             
     pub fn x(&self) -> f64 { self[0] }
     pub fn y(&self) -> f64 { self[1] }
@@ -106,6 +110,19 @@ impl Vec3 {
         Vec3 { e: e }
     }
 
+    pub fn near_zero(&self) -> bool {
+        let mut result = true;
+        let threshold = 1e-8;
+        for i in 0..DIMENSION {
+            result &= self[i] < threshold;
+            if !result { break; }
+        }
+        result
+    }
+
+    pub fn specular_reflect(&self, normal: &Vec3) -> Vec3 {
+        *self - 2.0 * self.dot(normal) * *normal
+    }
 }
 
 

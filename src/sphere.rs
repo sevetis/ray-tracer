@@ -1,26 +1,21 @@
-use super::vec3::{Point};
-use super::ray::{Ray, HitRecord, Hittable};
+use crate::ray::{Ray, HitRecord, Hittable};
+use crate::material::{Material};
+use crate::vec3::{Point};
 
 pub struct Sphere {
     center: Point,
-    radius: f64
+    radius: f64,
+    mat: Material,
 }
 
 impl Sphere {
-    pub const fn new(p: Point, r: f64) -> Sphere {
+    pub const fn new(p: Point, r: f64, m: Material) -> Sphere {
         Sphere {
             center: p,
-            radius: r
+            radius: r,
+            mat: m,
         }
     }
-
-//    pub fn center(&self) -> &Point {
-//        &self.center
-//    }
-
-//    pub fn radius(&self) -> f64 {
-//        self.radius
-//    }
 }
 
 impl Hittable for Sphere {
@@ -57,7 +52,8 @@ impl Hittable for Sphere {
             root,
             position,
             normal,
-            front_face
+            front_face,
+            self.mat,
         ))
     }
 }
