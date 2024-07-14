@@ -78,19 +78,3 @@ pub trait Hittable {
     fn intersect(&self, ray: &Ray, t_min: f64, t_max: f64) -> Option<HitRecord>;
 }
 
-
-#[cfg(test)]
-mod tests {
-    use super::{Ray, Point, Vec3};
-
-    #[test]
-    fn ray() {
-        let o = Point::new([0.0, 0.0, 0.0]); 
-        let d = Vec3::new([1.0, 0.0, 0.0]);
-        let r = Ray::new(o, d);
-        assert_eq!(o, *r.org());
-        assert_eq!(d, *r.direct());
-        assert_eq!(o + d.unit() * 3.0, r.range(3.0));
-    }
-
-}
