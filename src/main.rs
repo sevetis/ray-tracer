@@ -4,7 +4,8 @@ fn main() {
     let mut world = World::new();
     let material_ground = Material::Lambertian(Color::new([0.8, 0.8, 0.0]));
     let material_center_ball = Material::Lambertian(Color::new([0.1, 0.2, 0.5]));
-    let material_left_ball = Material::Metal(Color::new([0.8, 0.8, 0.8]), 0.0);
+    // let material_left_ball = Material::Metal(Color::new([0.8, 0.8, 0.8]), 0.0);
+    let material_left_ball = Material::Dielectric(1.50);
     let material_right_ball = Material::Metal(Color::new([0.8, 0.6, 0.2]), 0.3);
 
     let earth = Sphere::new(Point::new([0.0, -100.5, -1.0]), 100.0, material_ground);

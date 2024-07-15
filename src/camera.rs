@@ -109,7 +109,7 @@ impl Camera {
                     sample_pixel = sample_pixel + (y + offset.y()) * self.delta_v;
                     sample_pixel = sample_pixel + (x + offset.x()) * self.delta_u;
                     let ray = Ray::new(self.eye, sample_pixel - self.eye);
-                    color = color + ray_color(&ray, &*environment, self.reflect_depth);
+                    color = color + ray_color(&ray, environment, self.reflect_depth);
                 }
                 
                 let sample_average_color = color / self.sample_num as f64;
