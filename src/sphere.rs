@@ -45,8 +45,8 @@ impl Hittable for Sphere {
 
         let position = ray.range(root);
         let mut normal = (position - self.center) / self.radius;
-        let front_face = ray.direct().dot(&normal) > 0.0;
-        if front_face { normal = normal.reverse(); }
+        let front_face = ray.direct().dot(&normal) < 0.0;
+        if !front_face { normal = normal.reverse(); }
 
         Some(HitRecord::new(
             root,
