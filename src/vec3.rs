@@ -120,8 +120,15 @@ impl Vec3 {
         result
     }
 
-    pub fn specular_reflect(&self, normal: &Vec3) -> Vec3 {
-        *self - 2.0 * self.dot(normal) * *normal
+    pub fn specular(&self, normal: &Vec3) -> Vec3 {
+        *self - 2.0 * self.dot(normal) * (*normal)
+    }
+
+    pub fn refract(&self, normal: &Vec3, eta_ratio: f64) -> Vec3 {
+        let cos_theta = normal.dot(&self.reverse()).min(1.0);
+        let perpendicular = eta_ratio * (*self + (*normal) * cos_theta);
+        let parallel = -((1.0 - perpendicular.square()).abs().sqrt()) * (*normal);
+        perpendicular + parallel
     }
 }
 
