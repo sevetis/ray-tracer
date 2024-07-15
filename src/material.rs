@@ -4,7 +4,7 @@ use crate::vec3::{Vec3, Color};
 #[derive(PartialEq, Clone, Copy)]
 pub enum Material {
     Lambertian(Color),
-    Metal(Color),
+    Metal(Color, f64),
 }
 
 pub fn scatter(mat: &Material, incident: &Ray, rec: &HitRecord) -> Option<(Ray, Color)> {
@@ -14,8 +14,8 @@ pub fn scatter(mat: &Material, incident: &Ray, rec: &HitRecord) -> Option<(Ray, 
                 return Some((ray, *albedo));
             }
         },
-        Material::Metal(albedo) => {
-            if let Some(ray) = metal_scatter(incident, rec) {
+        Material::Metal(albedo, fuzz) => {
+            if let Some(ray) = metal_scatter(incident, rec, fuzz) {
                 return Some((ray, *albedo));
             }
         },
@@ -36,11 +36,13 @@ fn lambertian_scatter(rec: &HitRecord) -> Option<Ray> {
 }
 
 
-fn metal_scatter(ray: &Ray, rec: &HitRecord) -> Option<Ray> {
-    let scatter_direction = ray.direct().specular_reflect(rec.normal());
-    Some (
-        Ray::new(*rec.pos(), scatter_direction)
-    )
+fn metal_scatter(ray: &Ray, rec: &HitRecord, fuzz: &f64) -> Option<Ray> {
+    let mut scatter_direction = ray.direct().specular_reflect(rec.normal());
+    scatter_direction = scatter_direction.unit() + *fuzz * Vec3::random_unit_vec();
+    if scatter_direction.dot(rec.normal()) > 0.0 {
+        return Some(Ray::new(*rec.pos(), scatter_direction));
+    }
+    None
 }
 
 
