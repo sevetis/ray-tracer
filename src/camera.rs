@@ -1,12 +1,11 @@
 use crate::ray::{Ray, Hittable};
 use crate::vec3::{Point, Vec3};
-use crate::world::{ORIGIN};
 use crate::color::*;
 use std::fs::File;
 use std::io::Write;
 
 const ASPECT_RATIO: f64 = 16.0 / 9.0;
-const V_FOV: f64 = 90.0;    // vertical field of view
+const V_FOV: f64 = 20.0;    // vertical field of view
 const WIDTH: f64 = 400.0;
 
 pub struct Camera {
@@ -45,7 +44,7 @@ impl Camera {
 
         let delta_u = viewport_u / width;
         let delta_v = viewport_v / height;
-        let viewport_upper_left = ORIGIN - focus_dist * w - viewport_u / 2.0 - viewport_v / 2.0;
+        let viewport_upper_left = look_from - focus_dist * w - viewport_u / 2.0 - viewport_v / 2.0;
         let start = viewport_upper_left + (delta_u + delta_v) / 2.0;
         
         let defocus_radius = focus_dist * f64::from(defocus_angle / 2.0).to_radians().tan();
@@ -59,7 +58,7 @@ impl Camera {
             pixel_start: start,
             delta_u: delta_u,
             delta_v: delta_v,
-            sample_num: 10,
+            sample_num: 100,
             reflect_depth: 50,
             defocus_angle: defocus_angle,
             disk_u: defocus_disk_u,

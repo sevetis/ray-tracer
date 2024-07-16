@@ -21,7 +21,7 @@ fn main() {
     world.add(left_bubble);
     world.add(right_ball);
 
-    let c = Camera::new(ORIGIN, Point::new([0.0, 0.0, -1.0]));
+    let c = Camera::new(Point::new([-2.0, 2.0, 1.0]), Point::new([0.0, 0.0, -1.0]));
     c.render(&world)
 }
 
