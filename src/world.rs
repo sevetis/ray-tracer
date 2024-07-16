@@ -3,6 +3,7 @@ use crate::vec3::{Point};
 use std::sync::{Arc};
 
 pub const INF: f64 = std::f64::INFINITY;
+pub const PI: f64 = std::f64::consts::PI;
 pub const ORIGIN: Point = Point::new([0.0, 0.0, 0.0]);
 
 pub struct World {
