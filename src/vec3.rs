@@ -49,8 +49,18 @@ impl Vec3 {
         }
         result
     }
-    
-    pub fn random_in_unit_sphere() -> Vec3{
+
+    pub fn random_in_unit_disk() -> Vec3 {
+        let mut result: Vec3;
+        loop {
+            result = Vec3::random(-1.0, 1.0);
+            result[DIMENSION - 1] = 0.0;
+            if result.square() < 1.0 { break; }
+        }
+        result
+    }
+
+    pub fn random_in_unit_sphere() -> Vec3 {
         let mut result: Vec3;
         loop {
             result = Vec3::random(-1.0, 1.0);
