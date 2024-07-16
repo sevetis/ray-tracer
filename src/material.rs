@@ -1,5 +1,7 @@
 use crate::ray::{Ray, HitRecord};
 use crate::vec3::{Vec3, Color};
+use rand::Rng;
+
 
 #[derive(PartialEq, Clone, Copy)]
 pub enum Material {
@@ -55,7 +57,25 @@ fn dielectrics_scatter(ray: &Ray, rec: &HitRecord, eta: &f64) -> Option<Ray> {
     if rec.front_face() { ri = 1.0 / eta; } 
     else { ri = *eta; }
 
-    let refracted = ray.direct().unit().refract(rec.normal(), ri);
-    Some(Ray::new(*rec.pos(), refracted))
+    let ray_direct_unit = ray.direct().unit();
+    let cos_theta = rec.normal().dot(&ray_direct_unit.reverse()).min(1.0);
+    let sin_theta = (1.0 - cos_theta * cos_theta).sqrt();
+    
+    let direction;
+    let cannot_refract = ri * sin_theta > 1.0;
+    let mut rng = rand::thread_rng();
+    let schlick = reflectance(cos_theta, ri) > rng.gen_range(0.0..1.0);
+    if cannot_refract || schlick {
+        direction = ray_direct_unit.specular(rec.normal());
+    } else {
+        direction = ray_direct_unit.refract(rec.normal(), ri);
+    }
+
+    Some(Ray::new(*rec.pos(), direction))
 }
 
+fn reflectance(cos: f64, refractive_index: f64) -> f64 {
+    let mut r0 = (1.0 - refractive_index) / (1.0 + refractive_index);
+    r0 = r0 * r0;
+    r0 + (1.0 - r0) * (1.0 - cos).powf(5.0)
+}
