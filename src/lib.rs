@@ -1,8 +1,10 @@
 
 mod vec3;
-pub use vec3::{Point, Color};
+pub use vec3::{Point};
 
 mod ray;
+mod color;
+pub use color::{Color};
 
 mod sphere;
 pub use sphere::{Sphere};

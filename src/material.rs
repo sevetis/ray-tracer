@@ -1,5 +1,6 @@
 use crate::ray::{Ray, HitRecord};
-use crate::vec3::{Vec3, Color};
+use crate::vec3::{Vec3};
+use crate::color::{Color};
 use rand::Rng;
 
 
