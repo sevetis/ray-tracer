@@ -47,6 +47,6 @@ fn main() {
     world.add(Arc::new(big_ball_3));
 
     let c = Camera::new(Point::new([13.0, 2.0, 3.0]), ORIGIN);
-    c.render(&world)
+    c.render(Arc::new(world));
 }
 

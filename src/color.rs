@@ -3,7 +3,7 @@ use crate::material::{scatter};
 use crate::vec3::{Vec3};
 use crate::world::{INF};
 use std::fs::File;
-use std::io::Write;
+use std::io::{Write, BufWriter};
 
 pub type Color = Vec3;
 
@@ -35,7 +35,7 @@ fn linear_to_gamma(val: f64) -> f64 {
     0.0
 }
 
-pub fn write_color(mut file: &File, c: &Color) {
+pub fn write_color(file: &mut BufWriter<File>, c: &Color) {
     let r_byte = (linear_to_gamma(c.x()) * RGB_MAX) as i32;
     let g_byte = (linear_to_gamma(c.y()) * RGB_MAX) as i32;
     let b_byte = (linear_to_gamma(c.z()) * RGB_MAX) as i32; 
