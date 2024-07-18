@@ -18,10 +18,10 @@ fn main() {
             if (center - Point::new([4.0, 0.2, 0.0])).length() > 0.9 {
                 let sphere_mat: Material;
 
-                if choose_mat < 0.8 {
+                if choose_mat < 0.3 {
                     let albedo = Color::random(0.0, 1.0) * Color::random(0.0, 1.0);
                     sphere_mat = Material::Lambertian(albedo);
-                } else if choose_mat < 0.95 {
+                } else if choose_mat < 0.9 {
                     let albedo = Color::random(0.5, 1.0);
                     let fuzz = rng.gen_range(0.0..0.5);
                     sphere_mat = Material::Metal(albedo, fuzz);

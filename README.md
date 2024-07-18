@@ -1,6 +1,10 @@
 # Ray tracer
 This is a simple ray tracer implemented in Rust
 
+<center><i>final scene</i></center>
+
+![final scene](out.png)
+
 
 # Acknowledgement
 This project is a Rust-based implementation of the ray tracing algorithms and scenes described in 

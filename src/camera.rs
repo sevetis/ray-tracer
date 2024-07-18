@@ -106,11 +106,36 @@ impl Camera {
                 write_color(&photo, &samples_average_color);
             }
         }
-        println!("\nCompleted!");
+        
+        if cfg!(target_os = "linux") {
+            println!("\nConvert ppm to png")
+            convert_ppm_to_png();
+        }
+        println!("Completed!");
     }
 
     fn defocus_sample(&self) -> Point {
         let p = Vec3::random_in_unit_disk();
         self.eye + p.x() * self.disk_u + p.y() * self.disk_v
+    }
+
+}
+
+
+fn convert_ppm_to_png() {
+    let output = std::process::Command::new("pnmtopng")
+        .arg("out.ppm")
+        .output()
+        .expect("Failed to execute command");
+
+    if output.status.success() {
+        println!("Conversion successful!");
+        let mut out_file = File::create("out.png")
+            .expect("Failed to create output file");
+        std::io::copy(&mut output.stdout.as_slice(), &mut out_file)
+            .expect("Failed to write output to file");
+    } else {
+        let stderr = String::from_utf8_lossy(&output.stderr);
+        println!("Conversion failed:\n{}", stderr);
     }
 }
