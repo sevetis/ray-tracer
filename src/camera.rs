@@ -6,10 +6,12 @@ use std::io::{Write, BufWriter};
 use std::sync::{Arc, Mutex};
 use std::thread;
 
-
 const ASPECT_RATIO: f64 = 16.0 / 9.0;
 const V_FOV: f64 = 20.0;    // vertical field of view
 const WIDTH: f64 = 1200.0;
+const THREADS_NUM: i64 = 12;
+const SAMPLE_NUM: u16 = 500;
+const REFLECT_DEPTH: u8 = 20;
 
 pub struct Camera {
     eye: Point,
@@ -61,8 +63,8 @@ impl Camera {
             pixel_start: start,
             delta_u: delta_u,
             delta_v: delta_v,
-            sample_num: 500,
-            reflect_depth: 50,
+            sample_num: SAMPLE_NUM,
+            reflect_depth: REFLECT_DEPTH,
             defocus_angle: defocus_angle,
             disk_u: defocus_disk_u,
             disk_v: defocus_disk_v,
@@ -84,7 +86,7 @@ impl Camera {
         // pixel buffer
         let pixels = Arc::new(Mutex::new(vec![BLACK; (width * height) as usize]));
 
-        let num_threads = 16;
+        let num_threads = THREADS_NUM;
         let chunk_size = height / num_threads;
         let mut handles = vec![];
 
@@ -100,8 +102,6 @@ impl Camera {
             let defocus_angle = self.defocus_angle;
             let disk_u = self.disk_u.clone();
             let disk_v = self.disk_v.clone();
-            let environment = Arc::clone(&environment);
-            let pixels = Arc::clone(&pixels);
 
             let handle = thread::spawn(move || {
                 let start_row = thread_id * chunk_size;
@@ -110,6 +110,8 @@ impl Camera {
                 } else {
                     (thread_id + 1) * chunk_size
                 };
+
+                let mut local_pixels = vec![BLACK; ((end_row - start_row) * width) as usize];
 
                 for i in start_row..end_row {
                     let y = i as f64;
@@ -134,9 +136,14 @@ impl Camera {
                         }
                 
                         let samples_average_color = color / sample_num as f64;
+                        local_pixels[((i - start_row) * width + j) as usize] = samples_average_color;
+                    }
+                }
 
-                        let mut pixels = pixels.lock().unwrap();
-                        pixels[(i * width + j) as usize] = samples_average_color;
+                let mut pixels = pixels.lock().unwrap();
+                for i in start_row..end_row {
+                    for j in 0..width {
+                        pixels[(i * width + j) as usize] = local_pixels[((i - start_row) * width + j) as usize];
                     }
                 }
             });
@@ -147,17 +154,18 @@ impl Camera {
             handle.join().unwrap();
         }
 
+        println!("Rendering time: {}s", now.elapsed().as_secs());
         let pixels = pixels.lock().unwrap();
         for color in pixels.iter() {
             write_color(&mut photo, color);
         }
 
+        drop(photo);
         if cfg!(target_os = "linux") {
-            println!("\nConvert ppm to png");
+            println!("Convert ppm to png");
             convert_ppm_to_png();
         }
         println!("Completed!");
-        println!("Rendering time: {}s", now.elapsed().as_secs());
     }
     
 }
