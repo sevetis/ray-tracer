@@ -27,7 +27,7 @@ impl Ray {
     }
 
     pub fn diffuse(normal: &Vec3) -> Vec3 {
-        let reflect = Vec3::random_in_unit_sphere().unit();
+        let reflect = Vec3::random_unit_vec();
         if reflect.dot(normal) > 0.0 {
             reflect
         } else {

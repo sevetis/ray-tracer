@@ -108,7 +108,7 @@ impl Camera {
         }
         
         if cfg!(target_os = "linux") {
-            println!("\nConvert ppm to png")
+            println!("\nConvert ppm to png");
             convert_ppm_to_png();
         }
         println!("Completed!");
