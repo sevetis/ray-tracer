@@ -6,7 +6,7 @@ use std::io::Write;
 
 const ASPECT_RATIO: f64 = 16.0 / 9.0;
 const V_FOV: f64 = 20.0;    // vertical field of view
-const WIDTH: f64 = 400.0;
+const WIDTH: f64 = 1200.0;
 
 pub struct Camera {
     eye: Point,
@@ -27,8 +27,8 @@ impl Camera {
         let width = WIDTH;
         let height = (width / ASPECT_RATIO).max(1.0).floor();
 
-        let focus_dist = 3.4;
-        let defocus_angle = 10.0;
+        let focus_dist = 10.0;
+        let defocus_angle = 0.6;
         let theta = V_FOV.to_radians();
         let h = (theta / 2.0).tan();
         let viewport_height = 2.0 * h * focus_dist;
@@ -58,7 +58,7 @@ impl Camera {
             pixel_start: start,
             delta_u: delta_u,
             delta_v: delta_v,
-            sample_num: 100,
+            sample_num: 500,
             reflect_depth: 50,
             defocus_angle: defocus_angle,
             disk_u: defocus_disk_u,

@@ -16,8 +16,8 @@ impl World {
         }
     }
 
-    pub fn add<T: Hittable + 'static>(&mut self, object: T) {
-        self.objects.push(Arc::new(object));
+    pub fn add<T: Hittable + 'static>(&mut self, object: Arc<T>) {
+        self.objects.push(object);
     }
     
 }

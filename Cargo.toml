@@ -8,3 +8,7 @@ name="lib"
 
 [dependencies]
 rand="0.8"
+
+[profile.dev]
+opt-level=3
+
