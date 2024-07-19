@@ -3,15 +3,17 @@ use crate::vec3::{Point, Vec3};
 use crate::color::*;
 use std::fs::File;
 use std::io::{Write, BufWriter};
-use std::sync::{Arc, Mutex};
+use std::sync::{Arc, Mutex, atomic::{AtomicUsize, Ordering}};
 use std::thread;
 
 const ASPECT_RATIO: f64 = 16.0 / 9.0;
 const V_FOV: f64 = 20.0;    // vertical field of view
-const WIDTH: f64 = 1200.0;
+const WIDTH: f64 = 1920.0;
 const THREADS_NUM: i64 = 12;
 const SAMPLE_NUM: u16 = 500;
 const REFLECT_DEPTH: u8 = 20;
+const FOCUS_DIST: f64 = 10.0;
+const DEFOCUS_ANGLE: f64 = 0.6;
 
 pub struct Camera {
     eye: Point,
@@ -32,8 +34,8 @@ impl Camera {
         let width = WIDTH;
         let height = (width / ASPECT_RATIO).max(1.0).floor();
 
-        let focus_dist = 10.0;
-        let defocus_angle = 0.6;
+        let focus_dist = FOCUS_DIST;
+        let defocus_angle = DEFOCUS_ANGLE;
         let theta = V_FOV.to_radians();
         let h = (theta / 2.0).tan();
         let viewport_height = 2.0 * h * focus_dist;
@@ -83,8 +85,10 @@ impl Camera {
         let height = self.height as i64;
         let width = self.width as i64;
 
+        let counter = Arc::new(AtomicUsize::new(0));
+        let total = (width * height) as usize;
         // pixel buffer
-        let pixels = Arc::new(Mutex::new(vec![BLACK; (width * height) as usize]));
+        let pixels = Arc::new(Mutex::new(vec![BLACK; total]));
 
         let num_threads = THREADS_NUM;
         let chunk_size = height / num_threads;
@@ -102,6 +106,7 @@ impl Camera {
             let defocus_angle = self.defocus_angle;
             let disk_u = self.disk_u.clone();
             let disk_v = self.disk_v.clone();
+            let counter = Arc::clone(&counter);
 
             let handle = thread::spawn(move || {
                 let start_row = thread_id * chunk_size;
@@ -137,6 +142,8 @@ impl Camera {
                 
                         let samples_average_color = color / sample_num as f64;
                         local_pixels[((i - start_row) * width + j) as usize] = samples_average_color;
+
+                        counter.fetch_add(1, Ordering::SeqCst);
                     }
                 }
 
@@ -150,11 +157,25 @@ impl Camera {
             handles.push(handle);
         }
 
+        let counter = Arc::clone(&counter);
+        let progress = thread::spawn(move || {
+            loop {
+                let completed = counter.load(Ordering::SeqCst);
+                let percentage = (completed as f64 / total as f64) * 100.0;
+                print!("\rProgress: {:.2}%", percentage);
+                std::io::stdout().flush().unwrap();
+
+                if completed >= total { break; }
+                thread::sleep(std::time::Duration::from_secs(1));
+            }
+        });
+
         for handle in handles {
             handle.join().unwrap();
         }
+        progress.join().unwrap();
 
-        println!("Rendering time: {}s", now.elapsed().as_secs());
+        println!("\nRendering time: {}s", now.elapsed().as_secs());
         let pixels = pixels.lock().unwrap();
         for color in pixels.iter() {
             write_color(&mut photo, color);

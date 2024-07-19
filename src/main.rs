@@ -5,7 +5,7 @@ use rand::Rng;
 fn main() {
     let mut world = World::new();
 
-    let material_ground = Material::Lambertian(Color::new([0.5, 0.6, 0.5]));
+    let material_ground = Material::Lambertian(Color::new([0.5, 0.5, 0.5]));
     let earth = Sphere::new(Point::new([0.0, -1000.0, 0.0]), 1000.0, material_ground);
     world.add(Arc::new(earth));
 
