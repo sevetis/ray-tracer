@@ -12,7 +12,7 @@ pub const WHITE: Color = Color::new([1.0, 1.0, 1.0]);
 pub const BLACK: Color = Color::new([0.0, 0.0, 0.0]);
 const SKY_BLUE: Color = Color::new([0.5, 0.7, 1.0]);
 
-pub fn ray_color<T: Hittable + 'static>(r: &Ray, environment: &T, depth: u8) -> Color {
+pub fn ray_color(r: &Ray, environment: &impl Hittable, depth: u8) -> Color {
     if depth <= 0 { return BLACK; }
     match environment.intersect(r, 0.001, INF) {
         Some(rec) => {

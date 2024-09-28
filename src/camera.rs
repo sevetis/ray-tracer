@@ -73,7 +73,7 @@ impl Camera {
         }
     }
 
-    pub fn render<T: Hittable + Sync + Send + 'static>(&self, environment: Arc<T>) {
+    pub fn render(&self, environment: Arc<impl Hittable + Sync + Send + 'static>) {
         let now = std::time::Instant::now();
         let mut photo = match File::create("out.ppm") {
             Err(e) => panic!("Could not create photo: {}", e),
